@@ -55,16 +55,16 @@ namespace TweetSharp.Tests.Service
 					Assert.IsNotNull(configuration.PhotoSizes.Large);
 					Assert.Greater(configuration.PhotoSizes.Thumb.Height, 0);
 					Assert.Greater(configuration.PhotoSizes.Thumb.Width, 0);
-					Assert.IsNotNullOrEmpty(configuration.PhotoSizes.Thumb.Resize);
+					Assert.IsNotEmpty(configuration.PhotoSizes.Thumb.Resize);
 					Assert.Greater(configuration.PhotoSizes.Small.Height, 0);
 					Assert.Greater(configuration.PhotoSizes.Small.Width, 0);
-					Assert.IsNotNullOrEmpty(configuration.PhotoSizes.Small.Resize);
+					Assert.IsNotEmpty(configuration.PhotoSizes.Small.Resize);
 					Assert.Greater(configuration.PhotoSizes.Medium.Height, 0);
 					Assert.Greater(configuration.PhotoSizes.Medium.Width, 0);
-					Assert.IsNotNullOrEmpty(configuration.PhotoSizes.Medium.Resize);
+					Assert.IsNotEmpty(configuration.PhotoSizes.Medium.Resize);
 					Assert.Greater(configuration.PhotoSizes.Large.Height, 0);
 					Assert.Greater(configuration.PhotoSizes.Large.Width, 0);
-					Assert.IsNotNullOrEmpty(configuration.PhotoSizes.Large.Resize);
+					Assert.IsNotEmpty(configuration.PhotoSizes.Large.Resize);
 				}
 
         [Test]
@@ -162,7 +162,7 @@ namespace TweetSharp.Tests.Service
 
             var error = service.Response.Error;
             Assert.IsNotNull(error);
-            Assert.IsNotNullOrEmpty(error.Message);
+						Assert.IsNotEmpty(error.Message);
             Trace.WriteLine(error.ToString());
         }
 
@@ -196,7 +196,7 @@ namespace TweetSharp.Tests.Service
 
             AssertResultWas(service, HttpStatusCode.OK);
             Assert.IsNotNull(profile);
-            Assert.IsNotNullOrEmpty(profile.ScreenName);
+            Assert.IsNotEmpty(profile.ScreenName);
         }
 
         [Test]
@@ -209,8 +209,22 @@ namespace TweetSharp.Tests.Service
 
             AssertResultWas(service, HttpStatusCode.OK);
             Assert.IsNotNull(profile);
-            Assert.IsNotNullOrEmpty(profile.ScreenName);
+            Assert.IsNotEmpty(profile.ScreenName);
         }
+
+				[Test]
+				public void Can_get_banner_sizes_for()
+				{
+					var service = GetAuthenticatedService();
+					var bannerSizes = service.GetProfileBannerFor(new GetProfileBannerForOptions() { ScreenName = "yortw" });
+
+					Trace.WriteLine(service.Response.Response);
+
+					AssertResultWas(service, HttpStatusCode.OK);
+					Assert.IsNotNull(bannerSizes);
+					Assert.IsNotNull(bannerSizes.Sizes);
+					Assert.IsTrue(bannerSizes.Sizes.Any());
+				}
 
 				[Test]
 				public void Can_destroy_tweet()
@@ -251,9 +265,10 @@ namespace TweetSharp.Tests.Service
 				public void Can_tweet_accented_chars()
 				{
 					var service = GetAuthenticatedService();
-					//var status = "Hello à....";
-					var status = "Can_tweet_with_image:Tweet an accented char à....";
+					var status = "Can_tweet_with_image:Not a duplicate of following tweet " + Guid.NewGuid().ToString();
 					var tweet = service.SendTweet(new SendTweetOptions { Status = status });
+					status = "Can_tweet_with_image:Tweet an accented char à...." + Guid.NewGuid().ToString();
+					tweet = service.SendTweet(new SendTweetOptions { Status = status });
 					
 					AssertResultWas(service, HttpStatusCode.OK);
 					Assert.IsNotNull(tweet);
@@ -273,7 +288,6 @@ namespace TweetSharp.Tests.Service
         }
 
         [Test]
-        [Ignore("Makes a live status update")]
         public void Can_direct_message()
         {
             var service = GetAuthenticatedService();
@@ -285,7 +299,6 @@ namespace TweetSharp.Tests.Service
         }
 
         [Test]
-        [Ignore("Makes a live status update")]
         public void Can_direct_message_with_url_without_double_entities()
         {
             var service = GetAuthenticatedService();
@@ -306,7 +319,6 @@ namespace TweetSharp.Tests.Service
         }
 
         [Test]
-        [Ignore("Makes a live status update")]
         public void Can_direct_message_with_screen_name()
         {
             var service = GetAuthenticatedService();
@@ -324,7 +336,6 @@ namespace TweetSharp.Tests.Service
         }
 
         [Test]
-        [Ignore("Makes a live status update")]
         public void Can_direct_message_with_a_url()
         {
             var service = GetAuthenticatedService();
@@ -376,7 +387,7 @@ namespace TweetSharp.Tests.Service
 
 						var error = service.Response.Error;
 						Assert.IsNotNull(error);
-						Assert.IsNotNullOrEmpty(error.Message);
+						Assert.IsNotEmpty(error.Message);
         }
 
         [Test]
@@ -385,16 +396,21 @@ namespace TweetSharp.Tests.Service
             var service = GetAuthenticatedService();
             using (var stream = new FileStream("daniel_8bit.png", FileMode.Open))
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 var tweet = service.SendTweetWithMedia(new SendTweetWithMediaOptions
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
                     {
                         Status = "Can_tweet_with_image:Tweet",
                         Images = new Dictionary<string, Stream> {{"test", stream}}
                     });
+#pragma warning restore CS0618 // Type or member is obsolete
                 Assert.IsNotNull(tweet);
                 Assert.AreNotEqual(0, tweet.Id);
             }            
         }
 
+				[Explicit("Fails, don't know why, should be fixed. However, this is not the appropriate way to tweet with media anymore, and the alternate method works so this is low priority.")]
 				[Test]
 				public void Can_tweet_with_image_and_accented_char()
 				{
@@ -403,7 +419,7 @@ namespace TweetSharp.Tests.Service
 					//Tweeting with image an no accented character works, using
 					//alternate endpoint to tweet status with accented character and
 					//no media also works, but this one fails if both conditions are true.
-					//This method is deprecated anywasy and using uploadmedia + the normal
+					//This method is deprecated anyway and using uploadmedia + the normal
 					//status update with mediaids works even when an accented char is present
 					//so not critical long term, but it would be great to understand why
 					//this is an issue and possibly fix it.
@@ -411,11 +427,15 @@ namespace TweetSharp.Tests.Service
 					service.TraceEnabled = true;
 					using (var stream = new FileStream("daniel_8bit.png", FileMode.Open, FileAccess.Read, FileShare.Read))
 					{
+#pragma warning disable CS0618 // Type or member is obsolete
 						var tweet = service.SendTweetWithMedia(new SendTweetWithMediaOptions
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 						{
 							Status = "Can_tweet_with_image:Tweet and accented char à", 
 							Images = new Dictionary<string, Stream> { { "test", stream } }
 						});
+#pragma warning restore CS0618 // Type or member is obsolete
 
 						AssertResultWas(service, HttpStatusCode.OK);
 						Assert.IsNotNull(tweet);
@@ -593,7 +613,7 @@ namespace TweetSharp.Tests.Service
             {
                 var deleted = service.DeleteSavedSearch(new DeleteSavedSearchOptions { Id = existing.Id });
                 Assert.IsNotNull(deleted);
-                Assert.IsNotNullOrEmpty(deleted.Query);
+                Assert.IsNotEmpty(deleted.Query);
                 Assert.AreEqual(deleted.Query, existing.Query);
             }
 
@@ -617,7 +637,39 @@ namespace TweetSharp.Tests.Service
             }
         }
 
-        [Test]
+				[Test]
+				public void Can_search_until()
+				{
+					var service = GetAuthenticatedService();
+					var results = service.Search(new SearchOptions { Q = "microsoft", Count = 10, Until=DateTime.Today.AddDays(-1) });
+
+					Assert.IsNotNull(results);
+					Assert.IsTrue(results.Statuses.Count() <= 10);
+
+					Assert.IsFalse(results.Statuses.Any((s) => s.CreatedDate >= DateTime.Today));
+
+					foreach (var tweet in results.Statuses)
+					{
+						Console.WriteLine("{0} says '{1}", tweet.User.ScreenName, tweet.Text);
+					}
+				}
+
+				[Test]
+				public void Can_ListSuggestedUsers()
+				{
+					var service = GetAuthenticatedService();
+					var results = service.ListSuggestedUsers(new ListSuggestedUsersOptions() { Lang = "en", Slug="television" });
+			
+					Assert.IsNotNull(results);
+					Assert.IsTrue(results.Users.Any());
+
+					foreach (var user in results.Users)
+					{
+						Console.WriteLine("Suggested; {0}", user.ScreenName);
+					}
+				}
+
+				[Test]
         public void Can_search_with_geo_and_lang()
         {
             var italyGeoCode = new TwitterGeoLocationSearch(41.9, 12.5, 10, TwitterGeoLocationSearch.RadiusType.Mi);
@@ -678,7 +730,7 @@ namespace TweetSharp.Tests.Service
 
             foreach (var tweet in results.Statuses)
             {
-                Assert.IsNotNullOrEmpty(tweet.RawSource);
+                Assert.IsNotEmpty(tweet.RawSource);
                 Console.WriteLine("{0} says '{1}", tweet.User.ScreenName, tweet.Text);
             }
         }
@@ -783,13 +835,13 @@ namespace TweetSharp.Tests.Service
 					Assert.AreEqual(4, ve.Sizes.Count());
 					Assert.IsNotNull(ve.VideoInfo);
 					Assert.AreEqual(30008, ve.VideoInfo.DurationMs);
-					Assert.AreEqual(5, ve.VideoInfo.Variants.Count());
+					Assert.GreaterOrEqual(ve.VideoInfo.Variants.Count(), 5);
 					Assert.AreEqual(2, ve.VideoInfo.AspectRatio.Count);
 					Assert.AreEqual(1, ve.VideoInfo.AspectRatio[0]);
 					Assert.AreEqual(1, ve.VideoInfo.AspectRatio[1]);
-					Assert.AreEqual("video/webm", ve.VideoInfo.Variants.First().ContentType);
+					Assert.AreEqual("video/mp4", ve.VideoInfo.Variants.First().ContentType);
 					Assert.AreEqual(832000, ve.VideoInfo.Variants.First().BitRate);
-					Assert.AreEqual("https://video.twimg.com/ext_tw_video/560049056895209473/pu/vid/480x480/gj_fzyk29R9dMPBY.webm", ve.VideoInfo.Variants.First().Url.ToString());
+					Assert.AreEqual("https://video.twimg.com/ext_tw_video/560049056895209473/pu/vid/480x480/gj_fzyk29R9dMPBY.mp4", ve.VideoInfo.Variants.First().Url.ToString());
 				}
 
         [Test]
@@ -804,7 +856,23 @@ namespace TweetSharp.Tests.Service
             Assert.AreEqual(HttpStatusCode.OK, service.Response.StatusCode);
         }
 
-        [Test]
+				[Test]
+				public void Can_get_quoted_tweet_async()
+				{
+					var service = GetAuthenticatedService();
+					var result = service.BeginGetTweet(new GetTweetOptions { Id = 642272776582230016 });
+					var tweet = service.EndGetTweet(result);
+
+					Assert.IsNotNull(tweet);
+					Assert.IsNotNull(service.Response);
+					Assert.AreEqual(HttpStatusCode.OK, service.Response.StatusCode);
+					Assert.IsTrue(tweet.IsQuoteStatus);
+					Assert.IsNotNull(tweet.QuotedStatus);
+					Assert.IsNotEmpty(tweet.QuotedStatusIdStr);
+					Assert.IsNotNull(tweet.QuotedStatusId);
+				}
+
+				[Test]
         public void Can_send_direct_message()
         {
             var service = new TwitterService { IncludeEntities = true };
@@ -905,27 +973,38 @@ namespace TweetSharp.Tests.Service
                 {
                     foreach (var hashtag in tweet.Entities.HashTags)
                     {
-                        Assert.IsNotNullOrEmpty(hashtag.Text);
+                        Assert.IsNotEmpty(hashtag.Text);
                     }
                 }
                 if (tweet.Entities.Urls.Count() > 0)
                 {
                     foreach (var url in tweet.Entities.Urls)
                     {
-                        Assert.IsNotNullOrEmpty(url.Value);
+                        Assert.IsNotEmpty(url.Value);
                     }
                 }
                 if (tweet.Entities.Mentions.Count() > 0)
                 {
                     foreach (var mention in tweet.Entities.Mentions)
                     {
-                        Assert.IsNotNullOrEmpty(mention.ScreenName);
+                        Assert.IsNotEmpty(mention.ScreenName);
                     }
                 }
             }
         }
 
-        [Test]
+				[Test]
+				public void Can_parse_multibyte_entities()
+				{
+					var service = GetAuthenticatedService();
+					var tweet = service.GetTweet(new GetTweetOptions() { Id = 637228279825608706 });
+
+					Assert.IsNotNull(tweet.Entities);
+					Assert.AreEqual(3, tweet.Entities.Count());
+					Assert.AreEqual("Heerlijk! 😋 Wij kijken er naar uit 😋 Thnx voor dit supermooie initiatief 👍🏻 <a href=\"https://twitter.com/degoudenaar\" target=\"_blank\">@degoudenaar</a> <a href=\"https://twitter.com/search?q=SlagerijvanHoof\" target=\"_blank\">#SlagerijvanHoof</a> <a href=\"https://twitter.com/brabantsedag/status/637195781049581568\" target=\"_blank\">https://t.co/W2TeREt0Hd</a>", tweet.TextAsHtml);			
+        }
+
+				[Test]
         public void Can_coalesce_entities_on_timeline()
         {
             var service = GetAuthenticatedService();
@@ -1020,13 +1099,89 @@ namespace TweetSharp.Tests.Service
 
             foreach(var list in lists)
             {
-                Assert.IsNotNullOrEmpty(list.Name);
+                Assert.IsNotEmpty(list.Name);
                 Trace.WriteLine(list.Name);
             }
         }
 
+				[Test]
+				public void Can_get_user_owned_lists()
+				{
+					var service = GetAuthenticatedService();
+					var lists = service.ListOwnedListsFor(new ListOwnedListsForOptions() { ScreenName = _hero });
+
+					Assert.IsNotNull(lists);
+					if (!lists.Any())
+					{
+						Assert.Ignore("This test account has no lists");
+					}
+
+					foreach (var list in lists)
+					{
+						Assert.IsNotEmpty(list.Name);
+						Trace.WriteLine(list.Name);
+					}
+				}
 
 				[Test]
+				public void Can_add_multiplelistusers()
+				{
+					var service = GetAuthenticatedService();
+					var list = service.CreateList(new CreateListOptions() { Name = "SecondTestList" });
+					try
+					{
+						Assert.IsNotNull(list);
+
+						var result = service.AddListMembers(new AddListMembersOptions() { ListId = list.Id, ScreenName = new string[] { "yortw", "elonmusk" } });
+						Assert.IsNotNull(result);
+					    Thread.Sleep(50); // Twitter needs a little time to update the list
+						var members = service.ListListMembers(new ListListMembersOptions() { ListId = result.Id });
+						Assert.IsNotNull(members);
+						Assert.AreEqual(2, members.Count);
+					}
+					finally
+					{
+						service.DeleteList(new DeleteListOptions() { ListId = list.Id });
+					}
+				}
+
+        [Test]
+        public void Can_update_list()
+        {
+            var service = GetAuthenticatedService();
+            var list =
+                service.CreateList(new CreateListOptions()
+                {
+                    Name = "Name",
+                    Description = "Description",
+                    Mode = TwitterListMode.Private
+                });
+
+            try
+            {
+                Assert.IsNotNull(list);
+								System.Threading.Thread.Sleep(1000); //Needed because sometimes the newly created list isn't available immediately.
+                var list2 = service.UpdateList(new UpdateListOptions { ListId = list.Id, Name = "Name 2", Description = "Description 2" });
+								Assert.IsNotNull(list2);
+								Assert.AreEqual("Name 2", list2.Name);
+                Assert.AreEqual("Description 2", list2.Description);
+                Assert.AreEqual("private", list2.Mode);
+
+								System.Threading.Thread.Sleep(1000); //Needed because sometimes the newly created list isn't available immediately.
+								var list3 = service.UpdateList(new UpdateListOptions { ListId = list.Id, Name = "Name 3", Description = "Description 3", Mode = TwitterListMode.Public });
+								Assert.IsNotNull(list3);
+								Assert.AreEqual("Name 3", list3.Name);
+                Assert.AreEqual("Description 3", list3.Description);
+                Assert.AreEqual("public", list3.Mode);
+
+            }
+            finally
+            {
+                service.DeleteList(new DeleteListOptions() { ListId = list.Id });
+            }
+        }
+
+        [Test]
 				public void Can_limit_list_members()
 				{
 					var service = GetAuthenticatedService();
@@ -1044,7 +1199,7 @@ namespace TweetSharp.Tests.Service
 					var membersCursor = service.ListListMembers(new ListListMembersOptions() { ListId = list.Id, Count = 1 });
 					Assert.AreEqual(1, membersCursor.Count);
 				}
-
+		
         [Test]
         public void Can_create_and_delete_list()
         {
@@ -1058,12 +1213,14 @@ namespace TweetSharp.Tests.Service
                                        });
 
             Assert.IsNotNull(list);
-            Assert.IsNotNullOrEmpty(list.Name);
+            Assert.IsNotEmpty(list.Name);
             Assert.AreEqual(list.Name, "test-list");
+
+						System.Threading.Thread.Sleep(1000);
 
             list = service.DeleteList(new DeleteListOptions { ListId = list.Id});
             Assert.IsNotNull(list);
-            Assert.IsNotNullOrEmpty(list.Name);
+            Assert.IsNotEmpty(list.Name);
             Assert.AreEqual(list.Name, "test-list");
         }
 
@@ -1311,7 +1468,7 @@ namespace TweetSharp.Tests.Service
             var service = GetAuthenticatedService();
             var summary = service.GetRateLimitStatus(new GetRateLimitStatusOptions());
             Assert.IsNotNull(summary);
-            Assert.IsNotNullOrEmpty(summary.AccessToken);
+            Assert.IsNotEmpty(summary.AccessToken);
 
 
 

@@ -2,8 +2,8 @@
 TwitterAccount, "account/settings":GET, GetAccountSettings
 
 // https://dev.twitter.com/docs/api/1.1/get/account/verify_credentials
-TwitterUser, "account/verify_credentials", GetUserProfile, bool? include_entities, bool? skip_status
-TwitterUser, "account/verify_credentials", VerifyCredentials, bool? include_entities, bool? skip_status
+TwitterUser, "account/verify_credentials", GetUserProfile, bool? include_entities, bool? skip_status, bool? include_email
+TwitterUser, "account/verify_credentials", VerifyCredentials, bool? include_entities, bool? skip_status, bool? include_email
 
 // https://dev.twitter.com/docs/api/1.1/post/account/settings
 TwitterAccount, "account/settings":POST, UpdateAccountSettings, int? trend_location_woeid, bool? sleep_time_enabled, int? start_sleep_time, int? end_sleep_time, string time_zone, string lang
@@ -35,6 +35,20 @@ TwitterUser, "blocks/create":POST, BlockUser, long? user_id, string screen_name,
 // https://dev.twitter.com/docs/api/1.1/post/blocks/destroy
 TwitterUser, "blocks/destroy":POST, UnblockUser, string screen_name, long? user_id, bool? include_entities, bool? skip_status
 
+
+// https://dev.twitter.com/docs/api/1.1/post/mutes/users/create
+TwitterUser, "mutes/users/create":POST, MuteUser, long? user_id, string screen_name 
+
+// https://dev.twitter.com/docs/api/1.1/post/mutes/users/destroy
+TwitterUser, "mutes/users/destroy":POST, UnmuteUser, long? user_id, string screen_name 
+
+// https://dev.twitter.com/docs/api/1.1/get/mutes/users/ids
+TwitterCursorList<long>, "mutes/users/ids", ListMutedUserIds, long? cursor
+
+// https://dev.twitter.com/docs/api/1.1/get/mutes/users/list
+TwitterCursorList<long>, "mutes/users/list", ListMutedUsers, long? cursor
+
+
 // https://dev.twitter.com/docs/api/1.1/get/users/lookup
 IEnumerable<TwitterUser>, "users/lookup", ListUserProfilesFor, IEnumerable<string> screen_name, IEnumerable<long> user_id, bool? include_entities
 
@@ -56,7 +70,5 @@ IEnumerable<TwitterUser>, "users/search", SearchForUser, string q, int? page, in
 // https://dev.twitter.com/docs/api/1.1/post/account/update_profile_banner
 // TODO
 
-// https://dev.twitter.com/docs/api/1.1/get/users/profile_ban
-// TODO
-
-
+// https://dev.twitter.com/docs/api/1.1/get/users/profile_banner
+ProfileBanners, "users/profile_banner", GetProfileBannerFor, string screen_name, long? user_id

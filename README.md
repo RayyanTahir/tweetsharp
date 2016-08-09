@@ -3,6 +3,83 @@
 
 This repository includes the latest code from the TweetSharp repository (which is newer than the published TweetSharp nuget package) and includes support for long twitter id's. Addtionally there are WinRT compatible libraries with basic async/await support.
 
+[![Build status](https://ci.appveyor.com/api/projects/status/209drvklf46hp069?svg=true)](https://ci.appveyor.com/project/Yortw/tweetmoasharp)
+
+[![NuGet Badge](https://buildstats.info/nuget/TweetMoaSharp)](https://www.nuget.org/packages/TweetMoaSharp/)
+
+#### Async Auth Examples
+
+A number of people struggle with using TweetMoaSharp on platforms such as Windows Phone, WinRT and UWP because these platforms do NOT suppport "synchronous calls". Any call that involves I/O much be made "asynchronously" so it doesn't block the UI thread. Since most TweetMoaSharp methods access the network, you must use the async versions of those methods on these platforms. 
+
+The original TweetSharp samples are all synchronous method based (although me async patterns were supported). People tend to try these samples on the platforms where synchronous methods aren't supported. Below are two async samples to help get you started on these platforms.
+
+###### Task Based Async
+This is recommended on platforms that support it (WinRT/UWP/.Net 4.5+). 
+
+```csharp
+
+using TweetSharp;
+using System.Threading.Tasks;
+
+// Note: This method containing this code must be marked 'async'
+
+// Pass your credentials to the service
+TwitterService service = new TwitterService("consumerKey", "consumerSecret");
+
+// Step 1 - Retrieve an OAuth Request Token
+OAuthRequestToken requestToken = await service.GetRequestTokenAsyc();
+
+// Step 2 - Redirect to the OAuth Authorization URL
+Uri uri = service.GetAuthorizationUri(requestToken);
+Process.Start(uri.ToString());
+
+// Step 3 - Exchange the Request Token for an Access Token
+string verifier = "123456"; // <-- This is input into your application by your user
+OAuthAccessToken access = await service.GetAccessTokenAsync(requestToken, verifier);
+
+// Step 4 - User authenticates using the Access Token
+service.AuthenticateWith(access.Token, access.TokenSecret);
+var result = await service.ListTweetsMentioningMeAsync();
+IEnumerable<TwitterStatus> mentions = result.Value;
+```
+
+###### Callback Based Async
+This is available on older platforms, like Windows Phone (pre WinRT).
+
+```csharp
+
+using TweetSharp;
+
+TweetSharp.TwitterService ts = new TweetSharp.TwitterService("MyConsumerKey", "MyConsumerSecret");
+//Step 1, get a request token
+ts.GetRequestToken((token, response) =>
+{
+	//If we got an ok response
+	if (response.StatusCode == System.Net.HttpStatusCode.OK)
+	{
+		//Step 2 - Convert to an auth uri
+		var authUri = ts.GetAuthorizationUri(token);
+
+		//Display the page at the auth uri location to the user
+		//Probably use the web application broken, or your own web view
+
+		// Step 3 - Exchange the Request Token for an Access Token
+		string verifier = "123456"; // <-- This is input into your application by your user
+		ts.GetAccessToken(token, verifier, (accessToken, atResponse) =>
+		{
+			// Step 4 - Provide the auth token to the TwitterService and then make an
+			// authed call.
+			ts.AuthenticateWith(accessToken.Token, accessToken.TokenSecret);
+			ts.ListTweetsMentioningMe(new TweetSharp.ListTweetsMentioningMeOptions(), (statuses, sResponse) =>
+			{
+				// The variables "statues" contains the returned list of tweets.
+			});
+		});
+	}
+});
+
+```
+
 **_The following is from the (latest version of the) original TweetSharp readme_**
 
 #### Addressing issues with deserialization 
@@ -389,3 +466,8 @@ public interface ITweeter
     string ProfileImageUrl { get; }
 }
 ```
+
+
+
+
+

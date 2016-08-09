@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 using Hammock.Model;
@@ -52,7 +53,11 @@ namespace TweetSharp
         private bool? _defaultProfile;
         private string _profileBackgroundImageUrlHttps;
         private string _profileImageUrlHttps;
-        
+				private string _profileBannerUrl;
+				private bool? _following;
+				private TwitterUserProfileEntities _Entities;
+				private string _email;
+
 #if !Smartphone && !NET20
         [DataMember]
 #endif
@@ -126,7 +131,25 @@ namespace TweetSharp
         }
 
 #if !Smartphone && !NET20
-        [DataMember]
+		[DataMember]
+#endif
+		public virtual TwitterUserProfileEntities Entities
+		{
+			get { return _Entities; }
+			set
+			{
+				if (_Entities == value)
+				{
+					return;
+				}
+
+				_Entities = value;
+				OnPropertyChanged("Entities");
+			}
+		}
+
+#if !Smartphone && !NET20
+		[DataMember]
 #endif
         public virtual string ProfileImageUrl
         {
@@ -303,6 +326,25 @@ namespace TweetSharp
 
                 _profileTextColor = value;
                 OnPropertyChanged("ProfileTextColor");
+            }
+        }
+
+#if !Smartphone && !NET20
+        [DataMember]
+#endif
+				[JsonProperty("profile_banner_url")]
+				public virtual string ProfileBannerUrl
+        {
+					get { return _profileBannerUrl; }
+            set
+            {
+							if (_profileBannerUrl == value)
+                {
+                    return;
+                }
+
+							_profileBannerUrl = value;
+							OnPropertyChanged("ProfileBannerUrl");
             }
         }
 
@@ -525,7 +567,28 @@ namespace TweetSharp
             }
         }
 
-        [JsonProperty("created_at")]
+		/// <summary>
+		/// This property is only returned if it was specifically enabled in the options when the profile was requested AND your app has been white listed for access to email by Twitter (https://dev.twitter.com/rest/reference/get/account/verify_credentials).
+		/// </summary>
+		[JsonProperty("email")]
+		#if !Smartphone && !NET20
+						[DataMember]
+		#endif
+				public virtual string Email
+				{
+					get { return _email; }
+					set
+					{
+						if (_email == value)
+						{
+							return;
+						}
+						_email = value;
+						OnPropertyChanged("Email");
+					}
+				}	
+
+				[JsonProperty("created_at")]
 #if !Smartphone && !NET20
         [DataMember]
 #endif
@@ -563,7 +626,25 @@ namespace TweetSharp
         }
 
 #if !Smartphone && !NET20
-        [DataMember]
+		[DataMember]
+#endif
+		public virtual bool? Following
+		{
+			get { return _following; }
+			set
+			{
+				if (_following == value)
+				{
+					return;
+				}
+
+				_following = value;
+				OnPropertyChanged("Following");
+			}
+		}
+
+#if !Smartphone && !NET20
+				[DataMember]
 #endif
         public virtual bool? IsTranslator
         {
@@ -756,4 +837,227 @@ namespace TweetSharp
             return !Equals(left, right);
         }
     }
+
+		#if !SILVERLIGHT && !WINRT
+		[Serializable]
+#endif
+#if !Smartphone && !NET20
+		[DataContract]
+#endif
+		public class ProfileBanners : PropertyChangedBase, ITwitterModel
+		{
+
+			private IDictionary<string, ProfileBannerSize> _Sizes;
+
+#if !Smartphone && !NET20
+			[DataMember]
+#endif
+			[JsonProperty("sizes")]
+			public virtual IDictionary<string, ProfileBannerSize> Sizes 
+			{
+				get { return _Sizes; }
+				set
+				{
+					if (_Sizes == value)
+					{
+						return;
+					}
+
+					_Sizes = value;
+					OnPropertyChanged("Sizes");
+				}
+			}
+
+			#region ITwitterModel Members
+
+			public string RawSource
+			{
+				get;
+				set;
+			}
+
+			#endregion
+		}
+
+#if !SILVERLIGHT && !WINRT
+		[Serializable]
+#endif
+#if !Smartphone && !NET20
+		[DataContract]
+		[DebuggerDisplay("{Url}")]
+#endif
+		public class ProfileBannerSize : PropertyChangedBase, ITwitterModel
+		{
+
+			private int _width;
+			private int _height;
+			private string _url;
+
+#if !Smartphone && !NET20
+			[DataMember]
+#endif			
+			[JsonProperty("h")]
+			public virtual int Height
+			{
+				get { return _height; }
+				set
+				{
+					if (_height == value)
+					{
+						return;
+					}
+
+					_height = value;
+					OnPropertyChanged("Height");
+				}
+			}
+
+#if !Smartphone && !NET20
+			[DataMember]
+#endif
+			[JsonProperty("w")]
+			public virtual int Width
+			{
+				get { return _width; }
+				set
+				{
+					if (_width == value)
+					{
+						return;
+					}
+
+					_width = value;
+					OnPropertyChanged("Width");
+				}
+			}
+
+#if !Smartphone && !NET20
+			[DataMember]
+#endif
+			[JsonProperty("url")]
+			public virtual string Url
+			{
+				get { return _url; }
+				set
+				{
+					if (_url == value)
+					{
+						return;
+					}
+
+					_url = value;
+					OnPropertyChanged("url");
+				}
+			}
+
+
+			#region ITwitterModel Members
+
+			public string RawSource
+			{
+				get;
+				set;
+			}
+
+			#endregion
+		}
+
+#if !SILVERLIGHT && !WINRT
+		[Serializable]
+#endif
+#if !Smartphone && !NET20
+	[DataContract]
+#endif
+	public class TwitterUserProfileEntities : PropertyChangedBase, ITwitterModel
+	{
+
+		private TwitterProfileEntitySet _Url;
+		private TwitterProfileEntitySet _Description;
+
+#if !Smartphone && !NET20
+		[DataMember]
+#endif
+		[JsonProperty("url")]
+		public virtual TwitterProfileEntitySet Url
+		{
+			get { return _Url; }
+			set
+			{
+				if (_Url == value)
+				{
+					return;
+				}
+
+				_Url = value;
+				OnPropertyChanged("Url");
+			}
+		}
+
+#if !Smartphone && !NET20
+		[DataMember]
+#endif
+		[JsonProperty("description")]
+		public virtual TwitterProfileEntitySet Description
+		{
+			get { return _Description; }
+			set
+			{
+				if (_Description == value)
+				{
+					return;
+				}
+
+				_Description = value;
+				OnPropertyChanged("Description");
+			}
+		}
+
+		#region ITwitterModel Members
+
+		public string RawSource
+		{
+			get;
+			set;
+		}
+
+		#endregion
+	}
+
+#if !SILVERLIGHT && !WINRT
+		[Serializable]
+#endif
+#if !Smartphone && !NET20
+	[DataContract]
+#endif
+	public class TwitterProfileEntitySet : PropertyChangedBase, ITwitterModel
+	{
+		private IEnumerable<TwitterUrl> _Urls;
+
+#if !Smartphone && !NET20
+		[DataMember]
+#endif
+		[JsonProperty("urls")]
+		public virtual IEnumerable<TwitterUrl> Urls
+		{
+			get { return _Urls; }
+			set
+			{
+				if (_Urls == value)
+				{
+					return;
+				}
+
+				_Urls = value;
+				OnPropertyChanged("Urls");
+			}
+		}
+
+		public string RawSource
+		{
+			get;
+			set;
+		}
+
+	}
+
 }

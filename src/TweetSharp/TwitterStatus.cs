@@ -21,6 +21,7 @@ namespace TweetSharp
 															 ITweetable
 	{
 		private DateTime _createdDate;
+		private DateTime _retrievedAt;
 		private long _id;
 		private string _idStr;
 		private string _inReplyToScreenName;
@@ -41,6 +42,10 @@ namespace TweetSharp
 		private TwitterPlace _place;
 		private int _retweetCount;
 		private int _favoriteCount;
+		private bool _isQuoteStatus;
+		private long? _quotedStatusId;
+		private string _quotedStatusIdStr;
+		private TwitterStatus _quotedStatus;
 
 #if !Smartphone && !NET20
 		[DataMember]
@@ -112,6 +117,78 @@ namespace TweetSharp
 
 				_inReplyToStatusId = value;
 				OnPropertyChanged("InReplyToStatusId");
+			}
+		}
+
+#if !Smartphone && !NET20
+		[DataMember]
+#endif
+		public virtual long? QuotedStatusId
+		{
+			get { return _quotedStatusId; }
+			set
+			{
+				if (_quotedStatusId == value)
+				{
+					return;
+				}
+
+				_quotedStatusId = value;
+				OnPropertyChanged("QuotedStatusId");
+			}
+		}
+
+#if !Smartphone && !NET20
+		[DataMember]
+#endif
+		public virtual string QuotedStatusIdStr
+		{
+			get { return _quotedStatusIdStr; }
+			set
+			{
+				if (_quotedStatusIdStr == value)
+				{
+					return;
+				}
+
+				_quotedStatusIdStr = value;
+				OnPropertyChanged("QuotedStatusIdStr");
+			}
+		}
+
+#if !Smartphone && !NET20
+		[DataMember]
+#endif
+		public virtual bool IsQuoteStatus
+		{
+			get { return _isQuoteStatus; }
+			set
+			{
+				if (_isQuoteStatus == value)
+				{
+					return;
+				}
+
+				_isQuoteStatus = value;
+				OnPropertyChanged("IsQuoteStatus");
+			}
+		}
+
+#if !Smartphone && !NET20
+		[DataMember]
+#endif
+		public virtual TwitterStatus QuotedStatus
+		{
+			get { return _quotedStatus; }
+			set
+			{
+				if (_quotedStatus == value)
+				{
+					return;
+				}
+
+				_quotedStatus = value;
+				OnPropertyChanged("QuotedStatus");
 			}
 		}
 
@@ -372,6 +449,27 @@ namespace TweetSharp
 			}
 		}
 
+		/// <summary>
+		/// Returns the UTC date and time (from the local system clock) at which this item was deserialised, usually equivalent to the time it was retrieved from Twitter. 
+		/// </summary>
+#if !Smartphone && !NET20
+		[DataMember]
+#endif
+		public virtual DateTime RetrievedAt
+		{
+			get { return _retrievedAt; }
+			set
+			{
+				if (_retrievedAt == value)
+				{
+					return;
+				}
+
+				_retrievedAt = value;
+				OnPropertyChanged("RetrievedAt");
+			}
+		}
+
 		[JsonProperty("geo")]
 #if !Smartphone && !NET20
 		[DataMember]
@@ -543,5 +641,12 @@ namespace TweetSharp
 		{
 			return !Equals(left, right);
 		}
+
+		public Uri ToTwitterUrl()
+		{
+			var builder = new UriBuilder("https", "twitter.com");
+			builder.Path = String.Format("{0}/status/{1}", this.Author.ScreenName, this.Id);
+			return builder.Uri;
+    }
 	}
 }
